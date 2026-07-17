@@ -1,0 +1,25 @@
+# Swift Package Manager
+.build/
+.swiftpm/
+Packages/
+
+# Xcode
+DerivedData/
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+*.xcuserstate
+
+# macOS
+.DS_Store
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+
+# Editor settings
+.vscode/
+.idea/
+*~
+*.swp
+
