@@ -91,7 +91,7 @@ is permitted for a native/public client.
 - Swift package: `FlowKit`
 - Platforms: macOS 14+ and iOS 17+
 - Swift tools version: 6.4
-- Implemented providers: GitHub and YouTube
+- Implemented providers: GitHub, YouTube, and Google Drive
 - Implemented GitHub behavior:
   - request a device authorization challenge;
   - poll while authorization is pending;
@@ -104,6 +104,11 @@ is permitted for a native/public client.
   - exchange authorization callbacks and refresh access tokens;
   - upload local video files with bounded resumable chunks and progress;
   - map structured YouTube API errors.
+- Implemented Google Drive behavior:
+  - construct installed-app OAuth authorization requests with PKCE and state;
+  - exchange authorization callbacks and refresh access tokens;
+  - upload local files with metadata, bounded resumable chunks, and progress;
+  - map structured Google Drive API errors.
 - The consuming app stores returned access tokens securely.
 
 Relevant paths:
@@ -114,8 +119,12 @@ Relevant paths:
 - `Sources/FlowKit/YouTube/YouTubeFlow.swift`
 - `Sources/FlowKit/YouTube/YouTubeAuthentication.swift`
 - `Sources/FlowKit/YouTube/YouTubeUpload.swift`
+- `Sources/FlowKit/GoogleDrive/GoogleDriveFlow.swift`
+- `Sources/FlowKit/GoogleDrive/GoogleDriveAuthentication.swift`
+- `Sources/FlowKit/GoogleDrive/GoogleDriveUpload.swift`
 - `Tests/FlowKitTests/GitHubFlowTests.swift`
 - `Tests/FlowKitTests/YouTubeFlowTests.swift`
+- `Tests/FlowKitTests/GoogleDriveFlowTests.swift`
 - `README.md`
 
 ## Implementation conventions

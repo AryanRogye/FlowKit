@@ -51,10 +51,11 @@ The intended model is:
 ## Project status
 
 FlowKit is in early development. It currently supports GitHub device
-authentication and authenticated user lookup, plus YouTube OAuth and resumable
-video uploads. The longer-term direction is to support services such as Google
-Drive, Google Keep, Instagram, and Facebook, along with other OAuth, API-key,
-and self-hosted integrations where their platforms permit third-party access.
+authentication and authenticated user lookup, YouTube OAuth and resumable
+video uploads, and Google Drive OAuth and resumable file uploads. The
+longer-term direction is to support services such as Google Keep, Instagram,
+and Facebook, along with other OAuth, API-key, and self-hosted integrations
+where their platforms permit third-party access.
 
 Provider availability and authentication methods depend on each service's API,
 terms, app-review requirements, and supported platforms. The list above
@@ -151,6 +152,44 @@ Google restricts uploads from unverified API projects created after July 28,
 compliance audit to lift that restriction. Google also requires credentials to
 belong to the API client using them, so FlowKit does not ship or pool a shared
 Google project or client ID.
+
+## Google Drive file uploads
+
+Create an appropriate Google OAuth client for the consuming app, enable the
+Google Drive API, and pass the public client ID and registered redirect URI to
+FlowKit. Request only the scope the app needs; `drive.file` limits access to
+files the user opens with or creates through the app.
+
+```swift
+let flow = GoogleDriveFlow(
+    configuration: GoogleDriveConfiguration(
+        clientID: "your-ios-client-id",
+        redirectURI: URL(string: "com.example.app:/oauth2redirect")!
+    )
+)
+
+let authorization = try flow.makeAuthorizationRequest(
+    scopes: [.file],
+    accessType: .offline
+)
+let callbackURL = try await presentAuthorization(authorization.authorizationURL)
+let token = try await flow.exchangeAuthorizationCallback(callbackURL, for: authorization)
+
+let file = try await flow.uploadFile(
+    GoogleDriveFileUpload(
+        fileURL: localFileURL,
+        name: "Report.pdf",
+        mimeType: "application/pdf"
+    ),
+    accessToken: token.accessToken
+)
+print(file.id)
+```
+
+FlowKit validates OAuth callback state, uses PKCE without a client secret, and
+uploads local files in bounded resumable chunks. The consuming app presents the
+authorization URL, securely stores user tokens, refreshes access when needed,
+and complies with Google's consent-screen, verification, and data-use rules.
 
 ## Public configuration and private secrets
 
