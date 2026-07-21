@@ -1,7 +1,7 @@
 # FlowKit
 
 FlowKit is a Swift package for connecting apps to third-party services with
-credentials and configuration supplied by the app developer—or, when the app
+credentials and configuration supplied by the app developer or, when the app
 supports it, by the user.
 
 The goal is to make integrations portable instead of tying FlowKit to one
