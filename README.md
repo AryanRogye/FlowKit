@@ -214,6 +214,10 @@ flow with PKCE and does not request a client secret.
 - Use a backend for flows that require a secret to remain confidential.
 - Follow each provider's OAuth, app-review, branding, and data-use policies.
 
+## License
+
+FlowKit is available under the MIT License. See [LICENSE](LICENSE) for details.
+
 ## Direction
 
 FlowKit is being designed so a provider integration can describe:
