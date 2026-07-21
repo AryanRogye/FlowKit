@@ -108,6 +108,7 @@ is permitted for a native/public client.
   - construct installed-app OAuth authorization requests with PKCE and state;
   - exchange authorization callbacks and refresh access tokens;
   - upload local files with metadata, bounded resumable chunks, and progress;
+  - require explicit upload destinations and list or create destination folders;
   - map structured Google Drive API errors.
 - The consuming app stores returned access tokens securely.
 
@@ -122,6 +123,7 @@ Relevant paths:
 - `Sources/FlowKit/GoogleDrive/GoogleDriveFlow.swift`
 - `Sources/FlowKit/GoogleDrive/GoogleDriveAuthentication.swift`
 - `Sources/FlowKit/GoogleDrive/GoogleDriveUpload.swift`
+- `Sources/FlowKit/GoogleDrive/GoogleDriveFolders.swift`
 - `Tests/FlowKitTests/GitHubFlowTests.swift`
 - `Tests/FlowKitTests/YouTubeFlowTests.swift`
 - `Tests/FlowKitTests/GoogleDriveFlowTests.swift`

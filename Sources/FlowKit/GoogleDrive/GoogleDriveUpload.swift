@@ -9,20 +9,20 @@ public struct GoogleDriveFileUpload: Sendable {
     public let fileURL: URL
     public let name: String
     public let mimeType: String
-    public let parentFolderID: String?
+    public let destination: GoogleDriveDestination
     public let description: String?
 
     public init(
         fileURL: URL,
         name: String,
         mimeType: String,
-        parentFolderID: String? = nil,
+        destination: GoogleDriveDestination,
         description: String? = nil
     ) {
         self.fileURL = fileURL
         self.name = name
         self.mimeType = mimeType
-        self.parentFolderID = parentFolderID
+        self.destination = destination
         self.description = description
     }
 }
@@ -50,6 +50,7 @@ public enum GoogleDriveUploadError: LocalizedError, Sendable, Equatable {
     case invalidFile
     case invalidName
     case invalidMIMEType
+    case invalidDestination
     case invalidChunkSize
     case missingUploadLocation
     case invalidResponse
@@ -61,6 +62,7 @@ public enum GoogleDriveUploadError: LocalizedError, Sendable, Equatable {
         case .invalidFile: "The upload must be a non-empty local file."
         case .invalidName: "A Google Drive file name is required."
         case .invalidMIMEType: "A MIME type is required for the Google Drive upload."
+        case .invalidDestination: "A valid Google Drive upload destination is required."
         case .invalidChunkSize: "Google Drive upload chunks must be positive multiples of 256 KB."
         case .missingUploadLocation: "Google Drive did not return a resumable upload URL."
         case .invalidResponse: "Google Drive returned an invalid upload response."
@@ -84,6 +86,7 @@ extension GoogleDriveFlow {
               fileSize > 0 else { throw GoogleDriveUploadError.invalidFile }
         guard !upload.name.isEmpty else { throw GoogleDriveUploadError.invalidName }
         guard !upload.mimeType.isEmpty else { throw GoogleDriveUploadError.invalidMIMEType }
+        guard upload.destination.isValid else { throw GoogleDriveUploadError.invalidDestination }
         guard uploadChunkSize > 0, uploadChunkSize.isMultiple(of: 256 * 1024) else {
             throw GoogleDriveUploadError.invalidChunkSize
         }
@@ -187,7 +190,7 @@ extension GoogleDriveFlow {
         request.httpBody = try JSONEncoder().encode(UploadMetadata(
             name: upload.name,
             mimeType: upload.mimeType,
-            parents: upload.parentFolderID.map { [$0] },
+            parents: [upload.destination.folderID],
             description: upload.description
         ))
         let (data, rawResponse) = try await send(request)

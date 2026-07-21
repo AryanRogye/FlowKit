@@ -175,21 +175,36 @@ let authorization = try flow.makeAuthorizationRequest(
 let callbackURL = try await presentAuthorization(authorization.authorizationURL)
 let token = try await flow.exchangeAuthorizationCallback(callbackURL, for: authorization)
 
+// List folders under an explicitly chosen location, or create a destination.
+let folders = try await flow.listFolders(
+    in: .root,
+    accessToken: token.accessToken
+)
+let destination = try await flow.createFolder(
+    named: "FlowKit Uploads",
+    in: .root,
+    accessToken: token.accessToken
+)
+
 let file = try await flow.uploadFile(
     GoogleDriveFileUpload(
         fileURL: localFileURL,
         name: "Report.pdf",
-        mimeType: "application/pdf"
+        mimeType: "application/pdf",
+        destination: .folder(id: destination.id)
     ),
     accessToken: token.accessToken
 )
 print(file.id)
 ```
 
-FlowKit validates OAuth callback state, uses PKCE without a client secret, and
-uploads local files in bounded resumable chunks. The consuming app presents the
-authorization URL, securely stores user tokens, refreshes access when needed,
-and complies with Google's consent-screen, verification, and data-use rules.
+Every upload requires an explicit `.root`, `.folder(id:)`, or `.appData`
+destination. FlowKit can list child folders and create folders so the consuming
+app can present its own destination picker. It also validates OAuth callback
+state, uses PKCE without a client secret, and uploads local files in bounded
+resumable chunks. The consuming app presents the authorization URL, securely
+stores user tokens, refreshes access when needed, and complies with Google's
+consent-screen, verification, and data-use rules.
 
 ## Public configuration and private secrets
 
