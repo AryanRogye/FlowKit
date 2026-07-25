@@ -52,10 +52,11 @@ The intended model is:
 
 FlowKit is in early development. It currently supports GitHub device
 authentication and authenticated user lookup, YouTube OAuth and resumable
-video uploads, and Google Drive OAuth and resumable file uploads. The
-longer-term direction is to support services such as Google Keep, Instagram,
-and Facebook, along with other OAuth, API-key, and self-hosted integrations
-where their platforms permit third-party access.
+video uploads, Google Drive OAuth and resumable file uploads, and Gmail OAuth
+for standards-based IMAP clients through `EmailFlow`. The longer-term direction
+is to support services such as Google Keep, Instagram, and Facebook, along with
+other OAuth, API-key, email, and self-hosted integrations where their platforms
+permit third-party access.
 
 Provider availability and authentication methods depend on each service's API,
 terms, app-review requirements, and supported platforms. The list above
@@ -206,6 +207,56 @@ resumable chunks. The consuming app presents the authorization URL, securely
 stores user tokens, refreshes access when needed, and complies with Google's
 consent-screen, verification, and data-use rules.
 
+## Email OAuth and IMAP
+
+`EmailFlow` uses provider-specific OAuth configuration and standard email
+protocols. Gmail is the first supported provider: FlowKit performs Google's
+installed-app authorization-code flow with PKCE, requests the
+`https://mail.google.com/` scope, and prepares a SASL XOAUTH2 response for an
+IMAP client. It does not use the Gmail REST API.
+
+```swift
+let flow = EmailFlow(
+    configuration: .gmail(
+        clientID: "your-ios-client-id",
+        redirectURI: URL(string: "com.example.app:/oauth2redirect")!
+    )
+)
+
+let authorization = try flow.makeAuthorizationRequest(
+    scopes: [.gmailMail],
+    accessType: .offline
+)
+let callbackURL = try await presentAuthorization(authorization.authorizationURL)
+let token = try await flow.exchangeAuthorizationCallback(
+    callbackURL,
+    for: authorization
+)
+
+let imap = try flow.makeIMAPAuthentication(
+    username: "person@example.com",
+    accessToken: token.accessToken
+)
+
+// Configure an IMAP client with:
+// imap.host == "imap.gmail.com"
+// imap.port == 993
+// imap.security == .tls
+// imap.mechanism == .xoauth2
+// imap.initialClientResponse as the SASL initial client response
+```
+
+The consuming app supplies its own Google OAuth client, presents authorization
+in an approved system browser, stores access and refresh tokens in Keychain,
+and refreshes access with `refreshAccessToken(_:)`. The XOAUTH2 initial client
+response contains the access token and must not be logged or persisted.
+
+Gmail's mail scope can require Google verification for a public app. Google
+Workspace administrators can also restrict third-party OAuth or IMAP access.
+FlowKit currently prepares IMAP connection and authentication values; mailbox
+commands and response parsing remain the responsibility of the consuming
+app's IMAP client.
+
 ## Public configuration and private secrets
 
 FlowKit keeps public configuration public. Values that a provider documents as
@@ -222,6 +273,10 @@ secret.
 
 FlowKit's YouTube integration uses Google's installed-app authorization-code
 flow with PKCE and does not request a client secret.
+
+`EmailFlow` uses the same public-client security boundary for Gmail OAuth. It
+does not request a client secret, and its IMAP XOAUTH2 value contains a
+short-lived user access token.
 
 - Never commit secrets or tokens to source control.
 - Pass only the values required by a provider's chosen authentication flow.

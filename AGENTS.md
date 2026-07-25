@@ -56,11 +56,12 @@ For the current GitHub device flow, the required application value is the
 GitHub OAuth client ID. The GitHub client secret is not used and has nothing to
 do with this repository or `GitHubConfiguration`.
 
-For YouTube, the consuming developer supplies an iOS OAuth client ID and its
-registered redirect URI. Google's installed-app authorization-code flow uses
-PKCE and does not require FlowKit to request a client secret. Each consuming
-app must use a Google Cloud project and OAuth client appropriate for that API
-client and comply with Google's verification and YouTube API policies.
+For YouTube, Google Drive, and Gmail email access, the consuming developer
+supplies an appropriate Google OAuth client ID and its registered redirect URI.
+Google's installed-app authorization-code flow uses PKCE and does not require
+FlowKit to request a client secret. Each consuming app must use a Google Cloud
+project and OAuth client appropriate for that client and comply with Google's
+verification and service policies.
 
 Always verify a provider's current official documentation before deciding
 whether a value is public, whether a flow needs a secret, and whether the flow
@@ -91,7 +92,7 @@ is permitted for a native/public client.
 - Swift package: `FlowKit`
 - Platforms: macOS 14+ and iOS 17+
 - Swift tools version: 6.4
-- Implemented providers: GitHub, YouTube, and Google Drive
+- Implemented providers: GitHub, YouTube, Google Drive, and Gmail email access
 - Implemented GitHub behavior:
   - request a device authorization challenge;
   - poll while authorization is pending;
@@ -110,6 +111,14 @@ is permitted for a native/public client.
   - upload local files with metadata, bounded resumable chunks, and progress;
   - require explicit upload destinations and list or create destination folders;
   - map structured Google Drive API errors.
+- Implemented email behavior:
+  - expose provider-oriented `EmailFlow`, with Gmail as the first provider;
+  - construct Gmail installed-app OAuth requests with PKCE and state;
+  - exchange authorization callbacks and refresh access tokens;
+  - request Gmail's mail scope for IMAP/SMTP rather than use the Gmail REST API;
+  - prepare Gmail TLS endpoint and SASL XOAUTH2 values for an IMAP client;
+  - leave mailbox commands and IMAP response parsing to the consuming app's
+    IMAP client.
 - The consuming app stores returned access tokens securely.
 
 Relevant paths:
@@ -124,9 +133,13 @@ Relevant paths:
 - `Sources/FlowKit/GoogleDrive/GoogleDriveAuthentication.swift`
 - `Sources/FlowKit/GoogleDrive/GoogleDriveUpload.swift`
 - `Sources/FlowKit/GoogleDrive/GoogleDriveFolders.swift`
+- `Sources/FlowKit/Email/EmailFlow.swift`
+- `Sources/FlowKit/Email/EmailAuthentication.swift`
+- `Sources/FlowKit/Email/EmailIMAP.swift`
 - `Tests/FlowKitTests/GitHubFlowTests.swift`
 - `Tests/FlowKitTests/YouTubeFlowTests.swift`
 - `Tests/FlowKitTests/GoogleDriveFlowTests.swift`
+- `Tests/FlowKitTests/EmailFlowTests.swift`
 - `README.md`
 
 ## Implementation conventions
